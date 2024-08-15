@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { products } from '../../data/products.js'
-const prisma = new PrismaClient()
+import prisma from '../../src/db/db.js'
 
 const main = async () => {
     await prisma.products.deleteMany()
