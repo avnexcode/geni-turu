@@ -3,98 +3,166 @@ import { createProduct, createProducts, deleteProduct, getAllProducts, getProduc
 
 export const getProductsController = async (request, response) => {
     try {
-        const products = await getAllProducts();
-        response.status(200).send({
-            status: "OK",
-            message: "Success Get All Products",
+        const { page, limit, ...filterParams } = request.query;
+        const pageNumber = page ? parseInt(page) : undefined;
+        const limitNumber = limit ? parseInt(limit) : undefined;
+        const validFilterFields = ['name', 'category', 'price', 'description'];
+
+        const filter = Object.keys(filterParams).reduce((acc, key) => {
+            if (validFilterFields.includes(key)) {
+                acc[key] = filterParams[key];
+            }
+            return acc;
+        }, {});
+
+        const products = await getAllProducts(filter, pageNumber, limitNumber);
+        response.status(200).json({
+            status: "success",
+            message: "Successfully retrieved all products",
             data: products,
         });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(500).json({
+            status: "error",
+            message: "Failed to retrieve products",
+            error: error.message
+        });
     }
 };
 
 export const getProductController = async (request, response) => {
     try {
-        const id = request.params.id
-        const product = await getProductById(id)
-        response.status(200).send({
-            status: "OK",
-            message: "Success Get Detail Product",
+        const id = request.params.id;
+        const product = await getProductById(id);
+        if (!product) {
+            return response.status(404).json({
+                status: "error",
+                message: "Product not found"
+            });
+        }
+        response.status(200).json({
+            status: "success",
+            message: "Successfully retrieved product details",
             data: product
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(500).json({
+            status: "error",
+            message: "Failed to retrieve product details",
+            error: error.message
+        });
     }
 };
 
 export const postProductController = async (request, response) => {
     try {
-        const product = await createProduct(request.body)
-        response.status(200).send({
-            status: "OK",
-            message: "New Product Has Been Created",
+        const product = await createProduct(request.body);
+        response.status(201).json({
+            status: "success",
+            message: "Product has been successfully created",
             data: product
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(400).json({
+            status: "error",
+            message: "Failed to create product",
+            error: error.message
+        });
     }
 };
 
 export const postProductsController = async (request, response) => {
     try {
-        const products = await createProducts(request.body)
-        response.status(200).send({
-            status: "OK",
-            message: "New Products Has Been Created",
+        const products = await createProducts(request.body);
+        response.status(201).json({
+            status: "success",
+            message: "Products have been successfully created",
             data: products
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(400).json({
+            status: "error",
+            message: "Failed to create products",
+            error: error.message
+        });
     }
 };
 
 export const putProductController = async (request, response) => {
-    if (!(request.body.name && request.body.price && request.body.category && request.body.description && request.body.image)) {
-        return response.status(500).send({ message: "Missing some fields" })
+    const { name, price, category, description, image } = request.body;
+    if (!(name && price && category && description && image)) {
+        return response.status(400).json({
+            status: "error",
+            message: "Missing required fields"
+        });
     }
     try {
-        const id = request.params.id
-        const product = await updateProduct(id, request.body)
-        response.status(200).send({
-            status: "OK",
-            message: "Product Has Been Updated",
+        const id = request.params.id;
+        const product = await updateProduct(id, request.body);
+        if (!product) {
+            return response.status(404).json({
+                status: "error",
+                message: "Product not found"
+            });
+        }
+        response.status(200).json({
+            status: "success",
+            message: "Product has been successfully updated",
             data: product
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(500).json({
+            status: "error",
+            message: "Failed to update product",
+            error: error.message
+        });
     }
 };
 
 export const patchProductController = async (request, response) => {
     try {
-        const id = request.params.id
-        const product = await updateProduct(id, request.body)
-        response.status(200).send({
-            status: "OK",
-            message: "Product Has Been Updated",
+        const id = request.params.id;
+        const product = await updateProduct(id, request.body);
+        if (!product) {
+            return response.status(404).json({
+                status: "error",
+                message: "Product not found"
+            });
+        }
+        response.status(200).json({
+            status: "success",
+            message: "Product has been successfully updated",
             data: product
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(500).json({
+            status: "error",
+            message: "Failed to update product",
+            error: error.message
+        });
     }
 };
 
 export const deleteProductController = async (request, response) => {
     try {
-        const id = request.params.id
-        const product = await deleteProduct(id)
-        response.status(200).send({
-            status: "OK",
-            message: "Success Delete Product",
+        const id = request.params.id;
+        const product = await deleteProduct(id);
+        if (!product) {
+            return response.status(404).json({
+                status: "error",
+                message: "Product not found"
+            });
+        }
+        response.status(200).json({
+            status: "success",
+            message: "Product has been successfully deleted",
             data: product
-        })
+        });
     } catch (error) {
-        response.status(400).send(error.message)
+        response.status(500).json({
+            status: "error",
+            message: "Failed to delete product",
+            error: error.message
+        });
     }
 };

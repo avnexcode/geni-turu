@@ -1,61 +1,44 @@
 import prisma from "../db/db.js";
 
-export const findProducts = async () => {
-    const products = await prisma.products.findMany();
-    return products;
+export const findProducts = async (filter, page, limit) => {
+    const skip = (page - 1) * limit;
+    const products = await prisma.products.findMany({
+        where: filter,
+        skip,
+        take: limit,
+    });
+    const total = await prisma.products.count({ where: filter });
+    return { products, total, page, limit };
 };
 
 export const findProductById = async (id) => {
-    const product = await prisma.products.findUnique({
+    return await prisma.products.findUnique({
         where: { id },
     });
-    return product;
 };
 
 export const insertProduct = async (newProductData) => {
-    const product = await prisma.products.create({
-        data: {
-            name: newProductData.name,
-            price: newProductData.price,
-            category: newProductData.category,
-            description: newProductData.description,
-            image: newProductData.image,
-        },
+    return await prisma.products.create({
+        data: newProductData,
     });
-    return product;
 };
 
-export const insertManyProduct = async (newProductsData) => {
-    const products = await prisma.products.createMany({
-        data: newProductsData.map((product) => ({
-            name: product.name,
-            price: product.price,
-            category: product.category,
-            description: product.description,
-            image: product.image,
-        })),
+export const insertManyProducts = async (newProductsData) => {
+    return await prisma.products.createMany({
+        data: newProductsData,
         skipDuplicates: true,
     });
-    return products;
 };
 
-export const destoryProduct = async (id) => {
-    const product = await prisma.products.delete({
+export const destroyProduct = async (id) => {
+    return await prisma.products.delete({
         where: { id },
     });
-    return product;
 };
 
 export const updateProduct = async (id, productData) => {
-    const product = await prisma.products.update({
-        data: {
-            name: productData.name,
-            price: productData.price,
-            category: productData.category,
-            description: productData.description,
-            image: productData.image,
-        },
+    return await prisma.products.update({
+        data: productData,
         where: { id },
     });
-    return product;
 };
